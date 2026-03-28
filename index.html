@@ -1,0 +1,1507 @@
+<html lang="en"><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/content/location/location.js" id="eppiocemhmnlbhjplcgkofciiegomcon"></script><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/extend-native-history-api.js"></script><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/requests.js"></script><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Processor and Splitter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f9;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #121212;
+            color: #f4f4f9;
+        }
+           .logo {
+    position: fixed; /* Fixed position in the viewport */
+    top: 10px;      /* 10px from the top */
+    right: 10px;    /* 10px from the right */
+    width: 100px;   /* Adjust the size */
+    height: auto;
+    z-index: 100;   /* Ensure it stays above other elements */
+}
+.estimation-text {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-size: 18px; /* Slightly larger font */
+}
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding-left: 50px;
+            padding-right: 50px;
+            border-radius: 8px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+       
+/* Style for the estimation text */
+
+
+
+        .container.dark-mode {
+            background: #333;
+            color: #f4f4f9;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+
+
+        }
+
+        h1 {
+            color: #4CAF50;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        textarea.dark-mode {
+            background-color: #2b2b2b;
+            color: #f4f4f9;
+            border-color: #555;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button.dark-mode {
+            background-color: #555;
+            color: white;
+        }
+
+        .output-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .output-section .output-text {
+            width: 100%;
+            height: 200px;  /* Smaller output for Split Text */
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 14px;  /* Smaller font size */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #e8f5e9;
+            overflow: auto;
+            white-space: pre-wrap;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .output-section .output-text.dark-mode {
+            background-color: #2b2b2b;
+            color: #f4f4f9;
+            border-color: #555;
+        }
+
+        .split-text {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+
+        .completed-checkbox {
+            margin-left: 15px;
+        }
+
+        #outputContainer {
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 20px;
+        }
+
+        .dark-mode-toggle {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .dark-mode-toggle.dark-mode {
+            background-color: #555;
+            color: white;
+        }
+    </style>
+<script bis_use="true" type="text/javascript" charset="utf-8" data-bis-config="[&quot;facebook.com/&quot;,&quot;twitter.com/&quot;,&quot;youtube-nocookie.com/embed/&quot;,&quot;//vk.com/&quot;,&quot;//www.vk.com/&quot;,&quot;linkedin.com/&quot;,&quot;//www.linkedin.com/&quot;,&quot;//instagram.com/&quot;,&quot;//www.instagram.com/&quot;,&quot;//www.google.com/recaptcha/api2/&quot;,&quot;//hangouts.google.com/webchat/&quot;,&quot;//www.google.com/calendar/&quot;,&quot;//www.google.com/maps/embed&quot;,&quot;spotify.com/&quot;,&quot;soundcloud.com/&quot;,&quot;//player.vimeo.com/&quot;,&quot;//disqus.com/&quot;,&quot;//tgwidget.com/&quot;,&quot;//js.driftt.com/&quot;,&quot;friends2follow.com&quot;,&quot;/widget&quot;,&quot;login&quot;,&quot;//video.bigmir.net/&quot;,&quot;blogger.com&quot;,&quot;//smartlock.google.com/&quot;,&quot;//keep.google.com/&quot;,&quot;/web.tolstoycomments.com/&quot;,&quot;moz-extension://&quot;,&quot;chrome-extension://&quot;,&quot;/auth/&quot;,&quot;//analytics.google.com/&quot;,&quot;adclarity.com&quot;,&quot;paddle.com/checkout&quot;,&quot;hcaptcha.com&quot;,&quot;recaptcha.net&quot;,&quot;2captcha.com&quot;,&quot;accounts.google.com&quot;,&quot;www.google.com/shopping/customerreviews&quot;,&quot;buy.tinypass.com&quot;,&quot;gstatic.com&quot;,&quot;secureir.ebaystatic.com&quot;,&quot;docs.google.com&quot;,&quot;contacts.google.com&quot;,&quot;github.com&quot;,&quot;mail.google.com&quot;,&quot;chat.google.com&quot;,&quot;audio.xpleer.com&quot;,&quot;keepa.com&quot;,&quot;static.xx.fbcdn.net&quot;,&quot;sas.selleramp.com&quot;,&quot;1plus1.video&quot;,&quot;console.googletagservices.com&quot;,&quot;//lnkd.demdex.net/&quot;,&quot;//radar.cedexis.com/&quot;,&quot;//li.protechts.net/&quot;,&quot;challenges.cloudflare.com/&quot;,&quot;ogs.google.com&quot;,&quot;//www.ukrnafta.com/data/map/&quot;,&quot;//maps.google.com/maps&quot;,&quot;//www.openstreetmap.org/export/embed.html&quot;,&quot;//www.google.com/maps/d/u/3/embed&quot;]" data-dynamic-id="undefined" src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/../executors/200.js"></script><script bis_use="true" type="text/javascript" charset="utf-8" nonce="" data-dynamic-id="undefined" src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/../executors/101.js"></script></head>
+<body bis_register="W3sibWFzdGVyIjp0cnVlLCJleHRlbnNpb25JZCI6ImVwcGlvY2VtaG1ubGJoanBsY2drb2ZjaWllZ29tY29uIiwiYWRibG9ja2VyU3RhdHVzIjp7IkRJU1BMQVkiOiJlbmFibGVkIiwiRkFDRUJPT0siOiJlbmFibGVkIiwiVFdJVFRFUiI6ImVuYWJsZWQiLCJSRURESVQiOiJlbmFibGVkIiwiUElOVEVSRVNUIjoiZW5hYmxlZCIsIklOU1RBR1JBTSI6ImVuYWJsZWQiLCJUSUtUT0siOiJkaXNhYmxlZCIsIkxJTktFRElOIjoiZW5hYmxlZCIsIkNPTkZJRyI6ImRpc2FibGVkIn0sInZlcnNpb24iOiIyLjAuNDUiLCJzY29yZSI6MjAwNDUwfV0=" cz-shortcut-listen="true">
+    <div class="container" id="container" bis_skin_checked="1">
+        <h1>Text Processor 2.0</h1>
+        <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+        <button onclick="processText('replace')">Replace Words</button>
+        <button onclick="replaceSpecialCharacters()">Replace Special Characters</button>
+        <button onclick="splitText()">Split Text</button> <!-- For Split Text behavior -->
+        <button onclick="goToPage()">BETA </button> <!-- For Split Text with Spacing behavior -->
+        <button class="dark-mode-toggle" id="darkModeToggle" onclick="toggleDarkMode()"> Dark Mode</button>
+        <div class="output-section" bis_skin_checked="1">
+            <div id="outputText" class="output-text" bis_skin_checked="1"></div> <!-- Smaller output area for Split Text with Spacing -->
+            <button onclick="copyOutput()">Copy to Clipboard</button>
+            <div id="replacementsList" bis_skin_checked="1"></div>
+            <div id="outputContainer" bis_skin_checked="1"></div> <!-- Separate container for Split Text output without spacing -->
+        </div>
+    </div>
+    <script>
+        const replacements = {
+
+
+             
+            "boobs": "melons",
+            "jerk": "idiot",
+          
+"boobies": "rack",           
+"breasts": "melons", 
+"nipples": "nips", 
+
+"penis": "PP", 
+
+"vagina": "kitty", 
+
+"thrust": "push",
+"climax": "peak", 
+"orgasm": "joy", 
+"sex": "love",             
+"sexy": "secy", 
+                      "Orgy" : "orgg" ,
+
+"make love": "connect", 
+            "_": "", 
+            
+
+"erotic": "intimate", 
+
+"seduce": "charm", 
+
+"desire": "longing", 
+
+"fantasize": "dream", 
+
+"seduction": "charm", 
+
+"libido": "energy", 
+
+"arousal": "excitement", 
+                      "cunt" : "cnt" ,
+
+"ecstasy": "joy", 
+                      "Fuckin" : " " ,
+"Fuckwad" : "f wad" ,
+
+    "sex": "sec", 
+                      "Dicks" : "pp" ,
+"Fucked" : "screwed" ,
+"Fucks" : "f" ,
+
+    "fuck": "f", 
+
+    "breast": "melons", 
+ "breasts": "melons",
+    "penis": "pp", 
+
+    "vagina": "pp", 
+
+    "dick": "pp",
+    "Dicking" : "ding",
+   "Motherfucker" : "mother father",
+   "Cocksuckers" : "csuckers",
+
+    "cock": "pp", 
+
+    "pussy": "pp", 
+
+    "balls": "ball", 
+
+    "bitch": "beach", 
+
+    "Bitches": "beaches", 
+
+     "Booty": "butt", 
+
+"nipple": "mellons", 
+
+"boob": "mellons", 
+
+"tit": "mellons", 
+
+"virgin": "version", 
+
+"fucking": " ", 
+    "Fucker" : "f er",
+"Fuckers" : "f ers",
+
+"slutty": "salty",
+    "Cunts": "cants",
+    "Whores": "whrs",
+    "Dickwad": "d wad",
+    "Sluts": "slts",
+
+"Squirt": "Sqr", 
+
+"Bra": "under garments",
+
+ 
+
+"Pound": "Pnd", 
+
+"fucked": "screwed", 
+
+"cum": "come", 
+
+"ass": "butt", 
+
+"asshole": "idiot", 
+
+"moan": "mmmm", 
+
+"shaft": " ", 
+
+"stroke": "slide ", 
+
+"lick": "lik", 
+
+"suck": "sck",  
+
+"slut": "slot", 
+
+"blood": "bld", 
+
+"whore": "whr", 
+
+"porn": "pawn", 
+
+"rape": "rpe", 
+
+"fag": "fg", 
+
+"faggot": "fgot", 
+
+"retard": "retd", 
+
+"spic": "spk", 
+
+"coon": "cn", 
+
+"chink": "chk", 
+
+"nigger": "ngr", 
+
+"nigga": "nga", 
+
+"dyke": "dyk", 
+
+"kike": "kk", 
+
+"tranny": "trny", 
+
+"homo": "hmo", 
+            "homosexual": "homosecual", 
+
+"queer": "qer", 
+
+"gook": "gk", 
+
+"bastard": "monster", 
+
+"damn": " ",
+"damn it":"F it",
+"DAMN IT":"F IT", 
+
+"shit": "sht", 
+
+"crap": "crp", 
+
+"piss": "pss", 
+
+"douche": "dche", 
+
+"anal": "anl", 
+
+"oral": "orl", 
+
+"blowjob": "BJ", 
+
+"handjob": "hndjb", 
+
+"milf": "mlf", 
+
+"twink": "twk", 
+
+"twinkie": "twke", 
+
+"orgasm": "orgsm", 
+
+"masturbate": "mstrbte", 
+
+"masturbation": "mstrbtn", 
+
+"ejaculate": "ejclte", 
+
+"ejaculation": "ejcltn", 
+
+"clit": "clt", 
+
+"clitoris": "cltros", 
+
+"gonads": "gnds", 
+
+"pubic": "pbic", 
+
+"genital": "gntl", 
+
+"genitals": "gntls", 
+
+"fetish": "ftish", 
+
+"bondage": "bndge", 
+
+"dominatrix": "dmntrx", 
+
+"sodomize": "sdmze", 
+
+"sodomy": "sdmy", 
+
+"whorehouse": "whrehse", 
+
+"whoremonger": "whremngr", 
+
+"incest": "incst", 
+
+"necrophilia": "ncrphlia", 
+
+"bestiality": "bstlty", 
+
+"beastiality": "bstlty", 
+
+"pedophile": "pdphle", 
+
+"pedophilia": "pdphlia", 
+
+"zoophilia": "zphlia", 
+
+"child porn": "chld prn", 
+
+"child pornography": "chld prngrphy", 
+
+"hentai": "hntai", 
+
+"titty": "ttty", 
+
+"titties": "tties", 
+
+"boner": "bner", 
+
+"hard on": "hrd on", 
+
+"nude": "nde", 
+
+"nudity": "ndty", 
+
+"orgy": "orgy", 
+
+"gangbang": "gngbng", 
+
+"gang bang": "gng bng", 
+
+"bukkake": "bkkke", 
+
+"bukakke": "bkkke", 
+
+"vulva": "vlva", 
+
+"vulvas": "vlvas", 
+
+"labia": "lbia", 
+
+"labiaplasty": "lbplsty", 
+
+"penectomy": "pnctmy", 
+
+"penoplasty": "pnplsty", 
+
+"scrotum": "scrtm", 
+
+"testicle": "tstcl", 
+
+"testicles": "tstcls", 
+
+"foreskin": "frskn", 
+
+"smegma": "smgma", 
+
+"menstruate": "mnstrte", 
+
+"menstruation": "mnstrtn", 
+
+"period": "prd", 
+
+"ovulate": "ovlte", 
+
+"ovulation": "ovltn", 
+
+"uterus": "utrs", 
+
+"cervix": "crvx", 
+
+"cervical": "crvcl", 
+
+"endometrium": "ndmtrm", 
+
+"fallopian": "fllpn", 
+
+"fallopian tube": "fllpn tbe", 
+
+"ovary": "ovry", 
+
+"ovaries": "ovries", 
+
+"puberty": "pbrty", 
+
+"pubes": "pbz", 
+
+"pubic hair": "pbic hr", 
+
+"erect": "erct", 
+"Dickhead": "d head",
+"erection": "erctn", 
+
+"conception": "cncptn", 
+
+"contraception": "cntrcptn", 
+
+"contraceptive": "cntrcptv", 
+
+"birth control": "brth cntrl", 
+
+"abortion": "abtn", 
+
+"miscarriage": "mscrge", 
+
+"pregnant": "prgnnt", 
+
+"pregnancy": "prgnncy", 
+
+"fetus": "fts", 
+
+"fetuses": "fts", 
+
+    "testes": "tsts", 
+
+"semen": "smn", 
+
+"testosterone": "tstrn", 
+
+"estrogen": "estrgn", 
+
+"progesterone": "prgstrn", 
+
+"puberty": "pbrty", 
+
+"pubescent": "pbscnt", 
+
+"erectile": "erctl", 
+
+"dysfunction": "dsfnctn", 
+
+"gonorrhea": "gnrrha", 
+
+"syphilis": "syphls", 
+
+"herpes": "hrps", 
+
+"chlamydia": "chlmda", 
+
+"hepatitis": "hptts", 
+
+"STD": "std", 
+
+"STI": "sti", 
+
+"contraception": "cntrcptn", 
+
+"contraceptive": "cntrcptv", 
+
+"hormone": "hrmne", 
+
+"menstrual": "mnstrl", 
+
+"cycle": "cycl", 
+
+"ovulation": "ovltn", 
+
+"ovary": "ovry", 
+
+"fertility": "frtlty", 
+
+"infertility": "nfrtlty", 
+
+"insemination": "nsmmtn", 
+
+"conception": "cncptn", 
+
+"pregnancy": "prgnncy", 
+
+"gestation": "gsttn", 
+
+"embryo": "mbyo", 
+
+"fetus": "fts", 
+
+"placenta": "plcnt", 
+
+"amniotic": "mntc", 
+
+"birth": "brth", 
+
+"labor": "lbr", 
+
+"delivery": "dlvry", 
+
+"postpartum": "pstprtm", 
+
+"lactation": "lcttn", 
+
+"nursing": "nrsng", 
+
+"midwife": "mdwf", 
+
+"obstetrician": "bsttrcn", 
+
+"gynecologist": "gynclgst", 
+
+"ultrasound": "ltrsnd", 
+
+"mammogram": "mmgrm", 
+
+"breastfeed": "brstfd", 
+
+"breastfeeding": "brstfdng", 
+
+"colostrum": "clstrm", 
+
+"mastitis": "mstts", 
+
+"nipple": "npl", 
+
+"breast": "brst", 
+
+"menopause": "mnpse", 
+
+"andropause": "ndrps", 
+
+"hysterectomy": "hstrctmy", 
+
+"vasectomy": "vsctmy", 
+
+"prostate": "prstt", 
+
+"scrotum": "scrtm", 
+
+"testicle": "tstcl", 
+
+"testes": "tsts", 
+
+"sperm": "sprm", 
+
+"semen": "smn", 
+
+"ovum": "ovm", 
+
+"ova": "ova", 
+
+"zygote": "zygt", 
+
+"embryo": "mbyo", 
+
+"blastocyst": "blstcyst", 
+
+"fallopian": "fllpn", 
+
+"cervix": "crvx", 
+
+"uterus": "utrs", 
+
+"vagina": "vgna", 
+
+"labia": "lbia", 
+
+"clitoris": "cltrs", 
+
+"perineum": "prnm", 
+
+"episiotomy": "psitmy", 
+
+"menstruate": "mnstrt", 
+
+"menstruation": "mnstrtn", 
+
+"period": "prd", 
+
+"ovulate": "ovlt", 
+
+"ovulation": "ovltn", 
+
+"contraception": "cntrcptn", 
+
+"contraceptive": "cntrcptv", 
+
+"infertility": "nfrtlty", 
+
+"insemination": "nsmmtn", 
+
+"gestation": "gsttn", 
+
+"placenta": "plcnt", 
+
+"amniotic": "mntc", 
+
+"delivery": "dlvry", 
+
+"postpartum": "pstprtm", 
+
+"lactation": "lcttn", 
+
+"obstetrician": "bsttrcn", 
+
+"gynecologist": "gynclgst", 
+
+"ultrasound": "ltrsnd", 
+
+"mammogram": "mmgrm", 
+
+"breastfeed": "brstfd", 
+
+"menopause": "mnpse", 
+
+"andropause": "ndrps", 
+
+"hysterectomy": "hstrctmy", 
+
+"vasectomy": "vsctmy", 
+
+"prostate": "prstt", 
+
+     "adultery": "adlt", 
+
+"fornication": "frnctn", 
+
+"sodomy": "sdmy", 
+
+"voyeur": "vyr", 
+
+"voyeurism": "vyrsm", 
+
+"aphrodisiac": "phrds", 
+
+"brothel": "brthl", 
+
+"stripper": "strpr", 
+
+"strip club": "strp clb", 
+
+"prostitution": "prsttn", 
+
+"escort": "scrt", 
+
+"gigolo": "ggl", 
+
+"hooker": "hkr", 
+
+"madam": "mdm", 
+
+"pimp": "pmp", 
+
+"sugar daddy": "sgr ddy", 
+
+"sugar baby": "sgr bby", 
+
+"mistress": "mstrs", 
+
+"courtesan": "crtsn", 
+
+"concubine": "cncbn", 
+
+"harem": "hrm", 
+
+"love hotel": "lv htl", 
+
+"orgasm": "orgsm", 
+
+"climax": "clmx", 
+
+"arousal": "arlsl", 
+
+"foreplay": "frply", 
+
+"intimate": "ntmt", 
+
+"seduce": "sduc", 
+
+"seduction": "sductn", 
+
+"sensual": "snsl", 
+
+"sexual": "sxl", 
+
+"sexually": "secually", 
+
+"sexuality": "secuality",
+
+"explicit": "xplct", 
+
+"erotic": "rtic", 
+
+"erotica": "rtca", 
+
+"arouse": "ars", 
+
+"stimulate": "stmlt", 
+
+"stimulation": "stmltn", 
+
+"titillate": "ttllt", 
+
+"titillation": "ttlltn", 
+
+"tantric": "tntrc", 
+
+"kama sutra": "km str", 
+
+"aphrodisiac": "phrds", 
+
+"fetish": "ftsh", 
+
+"kink": "knk", 
+
+"kinky": "knky", 
+
+"masochist": "mscst", 
+
+"masochism": "mscsm", 
+
+"sadist": "sdst", 
+
+"sadism": "sdsm", 
+
+"sadomasochism": "sdmscs", 
+
+"dominance": "dmnce", 
+
+"submission": "sbmsn", 
+
+"dominatrix": "dmntrx", 
+
+"submissive": "sbmssv", 
+
+"switch": "swch", 
+
+"bdsm": "bdsm", 
+
+"bondage": "bndge", 
+
+"discipline": "dspln", 
+
+"dominance": "dmnce", 
+
+"submission": "sbmsn", 
+
+"sadomasochism": "sdmscs", 
+
+"voyeur": "vyr", 
+
+"exhibitionism": "xhbtnsm", 
+
+"exhibitionist": "xhbtnst", 
+
+"incestuous": "ncsts", 
+
+"incest": "ncst", 
+
+"pedophile": "pdphle", 
+
+"pedophilia": "pdphlia", 
+
+"hebophilia": "hbp", 
+
+"paraphilia": "prphl", 
+
+"necrophilia": "ncrphl", 
+
+"bestiality": "bstlty", 
+
+"zoophilia": "zphl", 
+
+"child molestation": "chld mlsttn", 
+
+"molester": "mlstr", 
+
+"rape": "rpe", 
+
+"rapist": "rpst", 
+
+"sexual assault": "sxl slt", 
+
+"sexual harassment": "sxl hrssmnt", 
+
+"groping": "grpng", 
+
+"fondling": "fndlng", 
+
+"indecent exposure": "ndcnt xpsr", 
+
+"streaking": "strkng", 
+
+"peeping tom": "ppng tm", 
+
+"sexual abuse": "sxl bs", 
+
+
+
+"consensual": "cnsns", 
+
+"non-consensual": "ncnsns", 
+
+"penetration": "pntrtn", 
+
+"intercourse": "ntrcrs", 
+
+"coitus": "cts", 
+
+"cunnilingus": "cnlngs", 
+
+"fellatio": "fllt", 
+
+"anilingus": "nlg", 
+
+"autofellatio": "tfltl", 
+
+"tribadism": "trbsm", 
+
+"tribbing": "trbbng", 
+
+"scissoring": "scssrng", 
+
+"fisting": "fstng", 
+
+"mutual masturbation": "mtl mstrbtn", 
+
+ 
+
+"threesome": "thrsm", 
+
+"foursome": "fursm", 
+
+"orgy": "orgy", 
+
+"gangbang": "gngbng", 
+
+"group sex": "grp sx", 
+
+"bukakke": "bkk", 
+
+"bukkake": "bkk", 
+
+"dildo": "dld", 
+
+"vibrator": "vbrtr", 
+
+"butt plug": "btt plg", 
+
+"anal beads": "nl bds", 
+
+"handcuffs": "hndcffs", 
+
+"whip": "whp", 
+
+"crop": "crp", 
+
+"gag": "gg", 
+
+"blindfold": "blndfld", 
+
+"ball gag": "bll gg", 
+
+"harness": "hrnss", 
+
+"chastity belt": "chstty blt", 
+
+"bondage gear": "bndg gr", 
+
+
+"latex": "ltx", 
+
+"rubber": "rbb", 
+
+"dominant": "dmnt", 
+
+"submissive": "sbmssv", 
+
+"switch": "swch", 
+                      
+"tits" : "tips" ,
+"Motherfuckers" : "mothafs" ,
+
+"slave": "slv", 
+
+"master": "mstr", 
+
+"mistress": "mstrs", 
+
+"sadist": "sdst", 
+
+"masochist": "mscst", 
+
+"sadomasochist": "sdmscs", 
+"&":" and ",
+
+"erotic": "rtc", 
+
+"sexual": "sxl", 
+
+"sensual": "snsl", 
+
+"intimate": "ntmt", 
+
+"seductive": "sductv", 
+
+"titillating": "ttlltng", 
+
+"arousing": "rsng", 
+
+"stimulating": "stmltng", 
+
+"explicit": "xplct" ,
+
+"drug": "drag" ,
+
+"drugs": "drags" ,
+
+"cocaine": "ccane",
+"Strip":"strp",  
+"Stripped":"strpped",  
+"Stripping":"strpping",  
+"Jerking":"jrking",  
+"Crotch":"pp",  
+"Womb":"wmb",  
+"Hymen":"hymn",  
+"Moan":"mmm",  
+"Moaned":"mmm",  
+"Moaning":"mmm",  
+"Cumming":"leaking",  
+"Horny":"corny",  
+"Titted":"tidded",  
+"Tited":"tided",  
+"Dickheads":"d heads",  
+"Slutrily":"sltrily",  
+"Bastards":"bstrds",  
+"Scum":"sum",  
+"Dickhead":"d head"
+
+
+        };
+const specialCharacterReplacements = {
+            "À": "A",
+            "Á": "A",
+            "Â": "A",
+            "Ã": "A",
+            "Ä": "A",
+            "Å": "A",
+            "Ā": "A",
+            "Ą": "A",
+            "Ă": "A",
+            "Ç": "C",
+            "Ć": "C",
+            "Č": "C",
+            "Ĉ": "C",
+            "Ċ": "C",
+            "È": "E",
+            "É": "E",
+            "Ê": "E",
+            "Ë": "E",
+            "Ē": "E",
+            "Ę": "E",
+            "Ě": "E",
+            "Ĕ": "E",
+            "Ė": "E",
+            "Ì": "I",
+            "Í": "I",
+            "Î": "I",
+            "Ï": "I",
+            "Ī": "I",
+            "Ĩ": "I",
+            "Ĭ": "I",
+            "Į": "I",
+            "İ": "I",
+            "Ñ": "N",
+            "Ń": "N",
+            "Ň": "N",
+            "Ņ": "N",
+            "Ŋ": "N",
+            "Ò": "O",
+            "Ó": "O",
+            "Ô": "O",
+            "Õ": "O",
+            "Ö": "O",
+            "Ō": "O",
+            "Ő": "O",
+            "Ø": "O",
+            "Ŏ": "O",
+            "Ù": "U",
+            "Ú": "U",
+            "Û": "U",
+            "Ü": "U",
+            "Ū": "U",
+            "Ů": "U",
+            "Ű": "U",
+            "Ŭ": "U",
+            "Ũ": "U",
+            "Ų": "U",
+            "Ý": "Y",
+            "Ÿ": "Y",
+            "Ŷ": "Y",
+            "Ź": "Z",
+            "Ż": "Z",
+            "Ž": "Z",
+            "Æ": "AE",
+            "Ǽ": "AE",
+            "ß": "SS",
+            "à": "a",
+            "á": "a",
+            "â": "a",
+            "ã": "a",
+            "ä": "a",
+            "å": "a",
+            "ā": "a",
+            "ą": "a",
+            "ă": "a",
+            "ç": "c",
+            "ć": "c",
+            "č": "c",
+            "ĉ": "c",
+            "ċ": "c",
+            "è": "e",
+            "é": "e",
+            "ê": "e",
+            "ë": "e",
+            "ē": "e",
+            "ę": "e",
+            "ě": "e",
+            "ĕ": "e",
+            "ė": "e",
+            "ì": "i",
+            "í": "i",
+            "î": "i",
+            "ï": "i",
+            "ī": "i",
+            "ĩ": "i",
+            "ĭ": "i",
+            "į": "i",
+            
+            "ñ": "n",
+            "ń": "n",
+            "ň": "n",
+            "ņ": "n",
+            "ŋ": "n",
+            "ò": "o",
+            "ó": "o",
+            "ô": "o",
+            "õ": "o",
+            "ö": "o",
+            "ō": "o",
+            "ő": "o",
+            "ø": "o",
+            "ŏ": "o",
+            "ù": "u",
+            "ú": "u",
+            "û": "u",
+            "ü": "u",
+            "ū": "u",
+            "ů": "u",
+            "ű": "u",
+            "ŭ": "u",
+            "ũ": "u",
+            "ų": "u",
+            "ý": "y",
+            "ÿ": "y",
+            "ŷ": "y",
+            "ź": "z",
+            "ż": "z",
+            "ž": "z",
+            "æ": "ae",
+            "_":"",
+            "ǽ": "ae",
+            "&" :"and ",
+            "(":" ",
+            ")":" ",
+            "[":" ",
+            "]":" ",
+            "{":" ",
+            "}":" ",
+            "~":" ",
+            "<":" ",
+            ">":" ",
+            '"':" ",
+            "*":" ",
+            "???:":"Unknown Character",
+            "???":"?",
+            "!!!":"!",
+            "?!":"?"
+
+               
+
+           
+        };
+
+        function processText(action) {
+            let inputText = document.getElementById('inputText').value;
+            let processedResult = action === 'replace' ? replaceWords(inputText) : deleteWords(inputText);
+
+            processedResult.plainText = removeContinuousDots(processedResult.plainText);
+            processedResult.plainText = removeRepeatedWords(processedResult.plainText);
+
+            document.getElementById('outputText').innerHTML = processedResult.highlightedText;
+            document.getElementById('outputText').dataset.plainText = processedResult.plainText;
+
+            let replacementsList = document.getElementById('replacementsList');
+            replacementsList.innerHTML = `<p><strong>Total changes: ${processedResult.changesCount}</strong></p>`;
+            replacementsList.innerHTML += `<h3>Change Counts:</h3><ul>` + 
+                Object.keys(processedResult.changes).map(key => 
+                    `<li>${key} -> ${replacements[key]}: <span>${processedResult.changes[key]}</span></li>`
+                ).join('') + 
+            `</ul>`;
+        }
+
+        function replaceSpecialCharacters() {
+            let inputText = document.getElementById('inputText').value;
+            let processedResult = replaceWords(inputText, specialCharacterReplacements, false);
+
+            processedResult.plainText = removeContinuousDots(processedResult.plainText);
+            processedResult.plainText = removeRepeatedWords(processedResult.plainText);
+
+            document.getElementById('outputText').innerHTML = processedResult.highlightedText;
+            document.getElementById('outputText').dataset.plainText = processedResult.plainText;
+
+            let replacementsList = document.getElementById('replacementsList');
+            replacementsList.innerHTML = `<p><strong>Total changes: ${processedResult.changesCount}</strong></p>`;
+            replacementsList.innerHTML += `<h3>Change Counts:</h3><ul>` + 
+                Object.keys(processedResult.changes).map(key => 
+                    `<li>${key} -> ${specialCharacterReplacements[key]}: <span>${processedResult.changes[key]}</span></li>`
+                ).join('') + 
+            `</ul>`;
+        }
+function goToPage() {
+            window.location.href = "Untitled-1.html"; // Specify the target HTML file
+        }
+
+        function replaceWords(text, replacementsDict = replacements, useWordBoundary = true) {
+            const changes = {};
+            let changesCount = 0;
+
+            const keys = Object.keys(replacementsDict).sort((a, b) => b.length - a.length);
+            keys.forEach(key => {
+                const regex = useWordBoundary ? new RegExp(`\\b${key}\\b`, 'gi') : new RegExp(key, 'gi');
+                if (regex.test(text)) {
+                    text = text.replace(regex, match => {
+                        const replacement = replacementsDict[key];
+                        if (!changes[key]) {
+                            changes[key] = 0;
+                        }
+                        changes[key]++;
+                        changesCount++;
+                        return `<span class="highlight">${replacement}</span>`;
+                    });
+                }
+            });
+
+            return {
+                highlightedText: text,
+                plainText: text.replace(/<span class="highlight">|<\/span>/g, ''),
+                changes,
+                changesCount
+            };
+        }
+
+        function deleteWords(text) {
+            const changes = {};
+            let changesCount = 0;
+
+            const words = text.split(/(\s+)/).map(word => {
+                let strippedWord = word.replace(/[^a-zA-Z]/g, '');
+                let lowerStrippedWord = strippedWord.toLowerCase();
+
+                for (let key in replacements) {
+                    const regex = new RegExp(`\\b${key}\\b`, 'gi');
+                    const regexEd = new RegExp(`\\b${key}(ed|ing|es|s)?\\b`, 'gi');
+                    if (regex.test(lowerStrippedWord) || regexEd.test(lowerStrippedWord)) {
+                        if (!changes[key]) {
+                            changes[key] = 0;
+                        }
+                        changes[key]++;
+                        changesCount++;
+                        return '';
+                    }
+                }
+                return word;
+            });
+
+            return {
+                highlightedText: words.join(''),
+                plainText: words.join(''),
+                changes,
+                changesCount
+            };
+        }
+
+        const readingTimePerChunk = {
+    Brandon: 7.50,
+    Christopher: 6.80
+};
+
+        function removeContinuousDots(text) {
+            return text.replace(/\.{3,}/g, '');
+        }
+
+        function removeRepeatedWords(text) {
+            return text.split(/[.!?]/).map(sentence => {
+                let words = sentence.trim().split(/\s+/);
+                let result = [];
+                let lastWord = '';
+                let count = 0;
+                for (let word of words) {
+                    if (word == lastWord) {
+                        count++;
+                        if (count < 4) {
+                            result.push(word);
+                        }
+                    } else {
+                        lastWord = word;
+                        count = 1;
+                        result.push(word);
+                    }
+                }
+                return result.join(' ');
+            }).join('. ');
+        }
+
+        function copyOutput() {
+            const outputText = document.getElementById('outputText').dataset.plainText;
+            const textarea = document.createElement('textarea');
+            textarea.value = outputText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+
+        // New Text Splitting Script
+        function removeExtraLineSpaces(text) {
+            return text.replace(/\n\s*\n/g, '\n');  // Replace multiple line spaces with a single line space
+        }
+
+        function splitText() {
+            const inputText = document.getElementById('inputText').value;
+            const sanitizedText = removeExtraLineSpaces(inputText);
+            const chunkSize = 7150;
+            const textChunks = [];
+            let currentPosition = 0;
+
+            while (currentPosition < sanitizedText.length) {
+                let nextChunkEnd = currentPosition + chunkSize;
+
+                // Ensure we don't cut off words: find the last space or newline before the chunkSize limit
+                if (nextChunkEnd < sanitizedText.length) {
+                    let lastSpace = sanitizedText.lastIndexOf(' ', nextChunkEnd);
+                    let lastNewLine = sanitizedText.lastIndexOf('\n', nextChunkEnd);
+                    nextChunkEnd = Math.max(lastSpace, lastNewLine);
+                    
+                    // If no space or newline is found, fallback to chunk size
+                    if (nextChunkEnd === -1 || nextChunkEnd < currentPosition) {
+                        nextChunkEnd = currentPosition + chunkSize;
+                    }
+                }
+
+                textChunks.push(sanitizedText.slice(currentPosition, nextChunkEnd));
+                currentPosition = nextChunkEnd;
+            }
+
+            displaySplitText(textChunks);
+        }
+
+        function formatTimeInHours(totalMinutes) {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = Math.round(totalMinutes % 60);
+    return hours > 0 ? `${hours} hrs ${minutes} mins` : `${minutes} mins`;
+}
+
+// Function to calculate total estimated time in hours and minutes
+function calculateEstimatedTime(chunks) {
+    let estimationText = '';
+    for (const person in readingTimePerChunk) {
+        const totalMinutes = readingTimePerChunk[person] * chunks.length;
+        estimationText += `${person}: ${formatTimeInHours(totalMinutes)} total | `;
+    }
+    return estimationText.slice(0, -3); // Remove the trailing separator
+}
+
+// Updated displaySplitText function to include time estimation in hours
+function displaySplitText(chunks) {
+    const outputContainer = document.getElementById('outputContainer');
+    outputContainer.innerHTML = '';  // Clear any previous output
+
+    // Create a container for the estimated time
+    const estimationDiv = document.createElement('div');
+    estimationDiv.style.textAlign = 'center';
+    estimationDiv.style.marginBottom = '20px';
+    estimationDiv.style.fontWeight = 'bold';
+    estimationDiv.classList.add('estimation-text');  // Add estimation-text class for styling
+    estimationDiv.innerHTML = `Estimated Time: ${calculateEstimatedTime(chunks)}`;
+    outputContainer.appendChild(estimationDiv);  // Add the estimation div to the outputContainer
+
+    chunks.forEach((chunk, index) => {
+        const chunkElement = document.createElement('div');
+        chunkElement.classList.add('split-text', 'fade-in');  // Add fade-in effect class
+        chunkElement.innerHTML = `
+            <div class="output-buttons">
+                <button onclick="copyToClipboard(${index})">Copy Chunk</button> <!-- Retain the Copy Chunk button -->
+                <label><input type="checkbox" class="completed-checkbox" onchange="markAsCompleted(this, 'chunk${index}')"> Completed</label>
+            </div>
+            <textarea id="chunk${index}" class="split-text" readonly>${chunk}</textarea>
+        `;
+        outputContainer.appendChild(chunkElement);
+    });
+}
+
+// Updated displaySplitTextWithSpacing function to include time estimation in hours
+function displaySplitTextWithSpacing(chunks) {
+    const outputText = document.getElementById('outputText');
+    outputText.innerHTML = '';  // Clear previous output
+
+    // Create a container for the estimated time
+    const estimationDiv = document.createElement('div');
+    estimationDiv.style.textAlign = 'center';
+    estimationDiv.style.marginBottom = '20px';
+    estimationDiv.style.fontWeight = 'bold';
+    estimationDiv.classList.add('estimation-text');  // Add estimation-text class for styling
+    estimationDiv.innerHTML = `Estimated Time: ${calculateEstimatedTime(chunks)}`;
+    outputText.appendChild(estimationDiv);  // Add the estimation div to the outputText
+
+    chunks.forEach((chunk, index) => {
+        outputText.innerHTML += `${chunk} \n\n <span class="highlight">--- GAREEB HU ANPAD NHI ---</span> \n\n`;
+    });
+}
+
+        function splitTextWithSpacing() {
+            const inputText = document.getElementById('inputText').value;
+            const sanitizedText = removeExtraLineSpaces(inputText);
+            const chunkSize = 7600;
+            const textChunks = [];
+            let currentPosition = 0;
+
+            while (currentPosition < sanitizedText.length) {
+                let nextChunkEnd = currentPosition + chunkSize;
+
+                // Ensure we don't cut off words: find the last space or newline before the chunkSize limit
+                if (nextChunkEnd < sanitizedText.length) {
+                    let lastSpace = sanitizedText.lastIndexOf(' ', nextChunkEnd);
+                    let lastNewLine = sanitizedText.lastIndexOf('\n', nextChunkEnd);
+                    nextChunkEnd = Math.max(lastSpace, lastNewLine);
+                    
+                    // If no space or newline is found, fallback to chunk size
+                    if (nextChunkEnd === -1 || nextChunkEnd < currentPosition) {
+                        nextChunkEnd = currentPosition + chunkSize;
+                    }
+                }
+
+                textChunks.push(sanitizedText.slice(currentPosition, nextChunkEnd));
+                currentPosition = nextChunkEnd;
+            }
+
+            displaySplitTextWithSpacing(textChunks);
+        }
+
+        function displaySplitTextWithSpacing(chunks) {
+            const outputText = document.getElementById('outputText');
+            outputText.innerHTML = '';  // Clear previous output
+
+            chunks.forEach((chunk, index) => {
+                outputText.innerHTML += `${chunk} \n\n <span class="highlight">--- GAREEB HU ANPAD NHI ---</span> \n\n`;
+            });
+        }
+
+        function markAsCompleted(checkbox, chunkId) {
+            const chunkElement = document.getElementById(chunkId);
+            if (checkbox.checked) {
+                chunkElement.style.backgroundColor = 'red';  // Change color to red if checked
+            } else {
+                chunkElement.style.backgroundColor = '';  // Reset color if unchecked
+            }
+        }
+
+       function copyToClipboard(chunkIndex) {
+    const textToCopy = document.getElementById(`chunk${chunkIndex}`).value;
+    const tempTextarea = document.createElement('textarea');
+    document.body.appendChild(tempTextarea);
+    tempTextarea.value = textToCopy;
+    tempTextarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempTextarea);
+
+    // Change button color and text after copying
+    const copyButton = document.querySelector(`#chunk${chunkIndex}`).previousElementSibling.querySelector('button');
+    copyButton.style.backgroundColor = 'yellow'; // Change background color to yellow
+    copyButton.style.color = 'black'; // Change text color to black
+    copyButton.innerHTML = 'Copied!'; // Change text to indicate it's been copied
+}
+
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('container').classList.toggle('dark-mode');
+            document.getElementById('inputText').classList.toggle('dark-mode');
+            document.getElementById('outputText').classList.toggle('dark-mode');
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => button.classList.toggle('dark-mode'));
+            const textareas = document.querySelectorAll('textarea');
+            textareas.forEach(textarea => textarea.classList.toggle('dark-mode'));
+        }
+    </script>
+
+
+</body></html>

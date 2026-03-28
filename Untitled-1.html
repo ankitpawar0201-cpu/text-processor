@@ -1,0 +1,231 @@
+<html lang="en"><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/content/location/location.js" id="eppiocemhmnlbhjplcgkofciiegomcon"></script><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/extend-native-history-api.js"></script><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/requests.js"></script><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Text with Spacing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f9;
+            color: #333;
+            height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #121212;
+            color: #f4f4f9;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        textarea {
+            width: 80%;
+            height: 200px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        textarea.dark-mode {
+            background-color: #2b2b2b;
+            color: #f4f4f9;
+            border-color: #555;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .output-container {
+            width: 80%;
+            margin: 20px 0;
+        }
+
+        .output-container textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #e8f5e9;
+            overflow-y: auto;
+            resize: none;
+        }
+
+        .chunk-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .chunk-info {
+            font-weight: bold;
+        }
+
+        .dark-mode-toggle {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .dark-mode-toggle.dark-mode {
+            background-color: #555;
+            color: white;
+        }
+    </style>
+<script bis_use="true" type="text/javascript" charset="utf-8" data-bis-config="[&quot;facebook.com/&quot;,&quot;twitter.com/&quot;,&quot;youtube-nocookie.com/embed/&quot;,&quot;//vk.com/&quot;,&quot;//www.vk.com/&quot;,&quot;linkedin.com/&quot;,&quot;//www.linkedin.com/&quot;,&quot;//instagram.com/&quot;,&quot;//www.instagram.com/&quot;,&quot;//www.google.com/recaptcha/api2/&quot;,&quot;//hangouts.google.com/webchat/&quot;,&quot;//www.google.com/calendar/&quot;,&quot;//www.google.com/maps/embed&quot;,&quot;spotify.com/&quot;,&quot;soundcloud.com/&quot;,&quot;//player.vimeo.com/&quot;,&quot;//disqus.com/&quot;,&quot;//tgwidget.com/&quot;,&quot;//js.driftt.com/&quot;,&quot;friends2follow.com&quot;,&quot;/widget&quot;,&quot;login&quot;,&quot;//video.bigmir.net/&quot;,&quot;blogger.com&quot;,&quot;//smartlock.google.com/&quot;,&quot;//keep.google.com/&quot;,&quot;/web.tolstoycomments.com/&quot;,&quot;moz-extension://&quot;,&quot;chrome-extension://&quot;,&quot;/auth/&quot;,&quot;//analytics.google.com/&quot;,&quot;adclarity.com&quot;,&quot;paddle.com/checkout&quot;,&quot;hcaptcha.com&quot;,&quot;recaptcha.net&quot;,&quot;2captcha.com&quot;,&quot;accounts.google.com&quot;,&quot;www.google.com/shopping/customerreviews&quot;,&quot;buy.tinypass.com&quot;,&quot;gstatic.com&quot;,&quot;secureir.ebaystatic.com&quot;,&quot;docs.google.com&quot;,&quot;contacts.google.com&quot;,&quot;github.com&quot;,&quot;mail.google.com&quot;,&quot;chat.google.com&quot;,&quot;audio.xpleer.com&quot;,&quot;keepa.com&quot;,&quot;static.xx.fbcdn.net&quot;,&quot;sas.selleramp.com&quot;,&quot;1plus1.video&quot;,&quot;console.googletagservices.com&quot;,&quot;//lnkd.demdex.net/&quot;,&quot;//radar.cedexis.com/&quot;,&quot;//li.protechts.net/&quot;,&quot;challenges.cloudflare.com/&quot;,&quot;ogs.google.com&quot;,&quot;//www.ukrnafta.com/data/map/&quot;,&quot;//maps.google.com/maps&quot;,&quot;//www.openstreetmap.org/export/embed.html&quot;,&quot;//www.google.com/maps/d/u/3/embed&quot;]" data-dynamic-id="undefined" src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/../executors/200.js"></script><script bis_use="true" type="text/javascript" charset="utf-8" nonce="" data-dynamic-id="undefined" src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/../executors/101.js"></script></head>
+<body __processed_19fe3a2c-73d6-4bd1-bd64-3734fbb45f44__="true" cz-shortcut-listen="true" bis_register="W3sibWFzdGVyIjp0cnVlLCJleHRlbnNpb25JZCI6ImVwcGlvY2VtaG1ubGJoanBsY2drb2ZjaWllZ29tY29uIiwiYWRibG9ja2VyU3RhdHVzIjp7IkRJU1BMQVkiOiJlbmFibGVkIiwiRkFDRUJPT0siOiJlbmFibGVkIiwiVFdJVFRFUiI6ImVuYWJsZWQiLCJSRURESVQiOiJlbmFibGVkIiwiUElOVEVSRVNUIjoiZW5hYmxlZCIsIklOU1RBR1JBTSI6ImVuYWJsZWQiLCJUSUtUT0siOiJkaXNhYmxlZCIsIkxJTktFRElOIjoiZW5hYmxlZCIsIkNPTkZJRyI6ImRpc2FibGVkIn0sInZlcnNpb24iOiIyLjAuNDUiLCJzY29yZSI6MjAwNDUwfV0=">
+    <h1>BETA</h1>
+    <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+    <button onclick="splitTextWithSpacing()">Split Text with Spacing</button>
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+    <div class="output-container" id="outputContainer" bis_skin_checked="1"></div>
+
+    <script>
+        let chunks = [];
+        let currentChunkIndex = 0;
+
+       function splitTextWithSpacing() {
+    let inputText = document.getElementById('inputText').value.trim();
+
+    // Replace continuous dots with a single dot, and remove underscores
+    inputText = inputText.replace(/\.{3,}/g, '.'); // Replace continuous dots
+    inputText = inputText.replace(/_+/g, ''); // Remove underscores
+    inputText = inputText.replace(/[*~{}\[\]\(\)]/g, '');
+
+    inputText = inputText.replace(/\s+_/g, ''); // Remove trailing underscores
+
+    // Remove extra line spaces
+   inputText = inputText.replace(/\n\s*\n+/g, '\n');// Replace multiple line breaks with a single line break
+
+    const chunkSize = 7600;
+    chunks = [];
+
+    let currentPosition = 0;
+    while (currentPosition < inputText.length) {
+        let nextChunkEnd = currentPosition + chunkSize;
+
+        if (nextChunkEnd < inputText.length) {
+            let lastSpace = inputText.lastIndexOf(' ', nextChunkEnd);
+            nextChunkEnd = lastSpace > currentPosition ? lastSpace : nextChunkEnd;
+        }
+
+        chunks.push(inputText.slice(currentPosition, nextChunkEnd).trim());
+        currentPosition = nextChunkEnd;
+    }
+
+    if (chunks.length > 0) {
+        currentChunkIndex = 0;
+        displayCurrentChunk();
+    }
+}
+
+        function displayCurrentChunk() {
+            const outputContainer = document.getElementById('outputContainer');
+            outputContainer.innerHTML = '';
+
+            if (chunks.length > 0) {
+                const chunkText = document.createElement('textarea');
+                chunkText.readOnly = true;
+                chunkText.value = chunks[currentChunkIndex];
+                chunkText.className = 'output-container-textarea';
+
+                const navigationDiv = document.createElement('div');
+                navigationDiv.classList.add('chunk-navigation');
+
+                const prevButton = document.createElement('button');
+                prevButton.textContent = 'Previous';
+                prevButton.disabled = currentChunkIndex === 0;
+                prevButton.onclick = () => {
+                    if (currentChunkIndex > 0) {
+                        currentChunkIndex--;
+                        displayCurrentChunk();
+                    }
+                };
+
+                const copyButton = document.createElement('button');
+                copyButton.textContent = 'Copy Chunk';
+                copyButton.onclick = () => {
+                    copyChunkToClipboard(chunks[currentChunkIndex]);
+                    copyButton.style.backgroundColor = 'yellow';
+                    copyButton.style.color = 'black';
+                };
+
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'Next';
+                nextButton.disabled = currentChunkIndex === chunks.length - 1;
+                nextButton.onclick = () => {
+                    if (currentChunkIndex < chunks.length - 1) {
+                        currentChunkIndex++;
+                        displayCurrentChunk();
+                    }
+                };
+
+                const chunkInfo = document.createElement('div');
+                chunkInfo.className = 'chunk-info';
+                chunkInfo.textContent = `Chunk ${currentChunkIndex + 1} of ${chunks.length}`;
+
+                navigationDiv.appendChild(prevButton);
+                navigationDiv.appendChild(copyButton);
+                navigationDiv.appendChild(nextButton);
+
+                outputContainer.appendChild(chunkText);
+                outputContainer.appendChild(chunkInfo);
+                outputContainer.appendChild(navigationDiv);
+            }
+        }
+
+        function copyChunkToClipboard(chunk) {
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = chunk;
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextarea);
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const toggleButton = document.querySelector('.dark-mode-toggle');
+            toggleButton.classList.toggle('dark-mode');
+        }
+    </script>
+
+
+</body></html>
